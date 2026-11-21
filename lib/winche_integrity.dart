@@ -1,6 +1,10 @@
-/// Apple's App Attest for Winche Integrity: proof, on iOS and macOS, that
-/// requests come from the project's own app. See [WincheAppAttest].
+/// Winche Integrity for Flutter: proof that requests to a Winche project come
+/// from its own app. [WinchePlatformIntegrity] picks the proof the platform
+/// has: [WincheAppAttest] on iOS and macOS, [WinchePlayIntegrity] on Android,
+/// a debug token elsewhere.
 library;
 
-export 'src/native.dart' show WincheIntegrityNative;
 export 'src/app_attest.dart' show WincheAppAttest;
+export 'src/native.dart' show WincheIntegrityNative;
+export 'src/platform_integrity.dart' show WinchePlatformIntegrity;
+export 'src/play_integrity.dart' show WinchePlayIntegrity;

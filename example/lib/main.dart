@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:winche_integrity/winche_integrity.dart';
 import 'package:winche_core/winche_core.dart';
 
-/// Proves this app to a Winche project with App Attest and calls one of its APIs.
-/// Run on a real iPhone, iPad or Mac (simulators have no App Attest), with:
+/// Proves this app to a Winche project (App Attest on iOS and macOS, Play Integrity on Android, a debug token
+/// elsewhere) and shows the Integrity token it gets. Run on a real device, with:
 ///   --dart-define=WINCHE_URL=https://api.example.com/projects/clinic --dart-define=WINCHE_APP=clinic-app
 void main() => runApp(const ExampleApp());
 
@@ -24,16 +24,13 @@ class _ExampleAppState extends State<ExampleApp> {
       appId: const String.fromEnvironment('WINCHE_APP', defaultValue: 'example-app'),
     ));
     try {
-      if (!await WincheAppAttest.isSupported()) {
-        setState(() => _status = 'App Attest isn\'t available here (a simulator?): use a debug token.');
-        return;
-      }
-      app.useIntegrity(WincheAppAttest());
+      final integrity = WinchePlatformIntegrity(debugToken: const String.fromEnvironment('WINCHE_DEBUG_TOKEN'));
+      app.useIntegrity(integrity);
       final errors = <Object>[];
       app.integrity.errors.listen(errors.add);
       final token = await app.integrity.token();
       setState(() => _status = token != null
-          ? 'Proved: an Integrity token until ${app.integrity.current!.expiresAt.toLocal()}'
+          ? 'Proved with ${integrity.provider}: an Integrity token until ${app.integrity.current!.expiresAt.toLocal()}'
           : 'Refused: ${errors.isEmpty ? 'no token' : errors.last}');
     } catch (e) {
       setState(() => _status = 'Failed: $e');

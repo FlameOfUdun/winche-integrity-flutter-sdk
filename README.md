@@ -1,21 +1,16 @@
 # winche_integrity
 
-Apple's **App Attest** for [Winche](https://github.com/FlameOfUdun/winche-server) Integrity: proof, on iOS and macOS,
-that requests to a Winche project come from its own app, not a copy of it, a script or someone's curl.
+[Winche](https://github.com/FlameOfUdun/winche-server) Integrity for Flutter: proof that requests to a Winche project
+come from its own app, not a copy of it, a script or someone's curl. The app proves itself, gets a short-lived
+Integrity token, and every Winche SDK sends it with its requests (winche_core does that once `useIntegrity` is set).
 
-The app makes a key in the device's Secure Enclave, has Apple attest it once, then signs each challenge from the project
-with it. The project checks the attestation against Apple's root and every signature against the key, and gives the app
-short-lived Integrity tokens, which every Winche SDK sends with its requests.
+| Platform | Proof |
+| --- | --- |
+| iOS 15+, macOS 12+ (real devices) | Apple **App Attest** (`WincheAppAttest`) |
+| Android 6+ with the Play Store | Google **Play Integrity**, standard API (`WinchePlayIntegrity`) |
+| Simulators, Windows, Linux, web (for now) | a **debug token** from the console |
 
-## Set up
-
-1. **In the project** (console → **Integrity**, or `winche apps:create`): give the app its Apple **bundle id** and
-   **team id**. To try it from Xcode, turn on **Accept development builds** (turn it off again before you enforce in
-   production).
-2. **In Xcode**: add the **App Attest** capability to the app target (Signing & Capabilities). Builds run from Xcode use
-   the development environment; set `com.apple.developer.devicecheck.appattest-environment` to `production` in the
-   entitlements to test as TestFlight and the App Store do.
-3. **In the app**:
+## Use
 
 ```sh
 flutter pub add winche_integrity
@@ -25,35 +20,53 @@ flutter pub add winche_integrity
 import 'package:winche_integrity/winche_integrity.dart';
 
 final app = Winche.initializeApp(options: DefaultWincheOptions.currentPlatform);   // appId from winche configure --app
-app.useIntegrity(kDebugMode && !await WincheAppAttest.isSupported()
-    ? const WincheDebugIntegrity(String.fromEnvironment('WINCHE_DEBUG_TOKEN'))   // simulators: a debug token
-    : WincheAppAttest());
+app.useIntegrity(WinchePlatformIntegrity(
+  // Where the platform has no proof (simulators, desktop): a debug token, in debug builds only.
+  debugToken: kDebugMode ? const String.fromEnvironment('WINCHE_DEBUG_TOKEN') : null,
+));
 ```
 
-Simulators have no App Attest: `WincheAppAttest.isSupported()` is false there, so use a debug token (console →
-Integrity → Debug tokens) in debug builds.
+Or choose the proof yourself: `app.useIntegrity(WincheAppAttest())`, `app.useIntegrity(WinchePlayIntegrity())`.
 
-## What it does
+## Set up: Apple (App Attest)
 
-- The first proof attests a new key (`attestKey`, for SHA-256 of a challenge from the project); every later one is an
-  assertion (`generateAssertion`) with it. The key's id is kept in `UserDefaults` per app id (it isn't a secret: the key
-  never leaves the Secure Enclave). Apple counts each assertion, so a copied one can't be sent twice.
-- A key the project doesn't know (its keys were forgotten, the app's Apple ids changed) is replaced by a new one at once.
-  A key gone from the Secure Enclave (a backup restored onto another device) is replaced too.
-- A refused attestation (another app's ids, a development build the project doesn't accept) makes a new key on the next
-  try, a minute later.
+1. **In the project** (console → **Integrity**, or `winche apps:create`): give the app its Apple **bundle id** and
+   **team id**. To try it from Xcode, turn on **Accept development builds** (and off again before enforcing in
+   production).
+2. **In Xcode**: add the **App Attest** capability to the app target. Builds run from Xcode use the development
+   environment; set `com.apple.developer.devicecheck.appattest-environment` to `production` to test as TestFlight and
+   the App Store do.
 
-The privacy manifest declares the `UserDefaults` use (reason CA92.1). Nothing is sent anywhere but the project.
+The first proof attests a new key (for SHA-256 of a challenge from the project); every later one is an assertion with
+it. The key's id is kept in `UserDefaults` per app id (not a secret: the key never leaves the Secure Enclave). A key the
+project doesn't know is replaced at once; a refused attestation makes a new key on the next try.
+
+## Set up: Android (Play Integrity)
+
+1. **In Google Cloud**: a project with the **Play Integrity API** enabled, and a **service account** with a JSON key.
+2. **In Play Console**: the app → App integrity → link that Cloud project.
+3. **In the project** (console → **Integrity**): give the app its **Android package** and the Cloud **project number**;
+   set the service account's key file (Google Play Integrity card, or `winche integrity:play-account key.json`). Choose
+   how good the device must be (device integrity by default), and whether builds from outside Google Play are accepted
+   (debug and internal builds; with signing certificates set, only those signed with them).
+
+Nothing goes in the app: the project sends the Cloud project number with each challenge. The app asks Play Integrity
+for a token with the request hash SHA-256 of the challenge; the project has Google decode it and checks the package,
+the hash, the time, the app's and the device's verdicts. A token provider Google says is no longer valid is prepared
+again, once; Google's other errors come to `app.integrity.errors` (`PlatformException` code `playIntegrity`, with its
+`code` and whether it's `retryable`).
 
 ## Develop
 
 ```sh
 flutter test
-cd example && flutter build macos --debug   # compiles the Swift (iOS: flutter build ios --simulator)
+cd example && flutter build apk --debug           # compiles the Kotlin
+cd example && flutter build macos --debug         # compiles the Swift (iOS: flutter build ios --simulator)
 ```
 
-Building the example from this repository needs its folder named `winche_integrity` (Swift Package Manager names a
-package by its folder); apps that install it from pub.dev aren't affected.
+Building the example for iOS or macOS from this repository needs the repository's folder named `winche_integrity`
+(Swift Package Manager names a package by its folder): link it, e.g. `ln -s "$PWD" ../winche_integrity`, and build a copy
+of the example that depends on `../winche_integrity`. Apps that install it from pub.dev aren't affected.
 
 ## License
 

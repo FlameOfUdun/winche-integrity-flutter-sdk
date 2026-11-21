@@ -22,13 +22,13 @@ final class WincheAppAttest extends WincheIntegrityProvider {
   final WincheIntegrityNative _platform;
   final Set<String> _startOver = {};
 
-  /// App Attest, through [platform] (tests give their own).
-  WincheAppAttest({WincheIntegrityNative platform = const WincheIntegrityNative()}) : _platform = platform;
+  /// App Attest, through [native] (tests give their own).
+  WincheAppAttest({WincheIntegrityNative native = const WincheIntegrityNative()}) : _platform = native;
 
   /// Whether this device can prove itself with App Attest (simulators can't).
-  static Future<bool> isSupported({WincheIntegrityNative platform = const WincheIntegrityNative()}) async {
+  static Future<bool> isSupported({WincheIntegrityNative native = const WincheIntegrityNative()}) async {
     try {
-      return await platform.isSupported();
+      return await native.isSupported();
     } on MissingPluginException {
       return false;   // not iOS or macOS
     }
@@ -49,7 +49,7 @@ final class WincheAppAttest extends WincheIntegrityProvider {
       await _platform.remove(keyName);
       await _platform.remove(attestedName);
     }
-    final challenge = await request.challenge();
+    final challenge = (await request.challenge()).value;
     for (var tries = 0; ; tries++) {
       var keyId = await _platform.load(keyName);
       final attested = keyId != null && await _platform.load(attestedName) == 'yes';

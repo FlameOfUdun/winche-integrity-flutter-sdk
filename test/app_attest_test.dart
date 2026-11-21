@@ -38,12 +38,12 @@ class FakeDevice extends WincheIntegrityNative {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   var challenges = 0;
-  WincheIntegrityRequest request([String app = 'clinic-app']) => WincheIntegrityRequest(app, () async => 'ch-${++challenges}');
+  WincheIntegrityRequest request([String app = 'clinic-app']) => WincheIntegrityRequest(app, () async => WincheIntegrityChallenge("ch-${++challenges}", DateTime(2030)));
   setUp(() => challenges = 0);
 
   test('a new key is attested once, then each challenge gets an assertion with it', () async {
     final device = FakeDevice();
-    final attest = WincheAppAttest(platform: device);
+    final attest = WincheAppAttest(native: device);
     expect(attest.provider, 'appAttest');
     expect(await attest.proof(request()), {'keyId': 'key-1', 'challenge': 'ch-1', 'attestation': 'attestation-of-key-1'});
     expect(await attest.proof(request()), {'keyId': 'key-1', 'challenge': 'ch-2', 'assertion': 'assertion-by-key-1'});
@@ -51,12 +51,12 @@ void main() {
     // Another app id keeps its own key.
     expect((await attest.proof(request('other-app')))['keyId'], 'key-2');
     // Kept across launches: a new provider on the same device asserts with the same key.
-    expect(await WincheAppAttest(platform: device).proof(request()), containsPair('assertion', 'assertion-by-key-1'));
+    expect(await WincheAppAttest(native: device).proof(request()), containsPair('assertion', 'assertion-by-key-1'));
   });
 
   test("a key the project doesn't know: a new one is attested at once; a refused attestation: a new key next time", () async {
     final device = FakeDevice();
-    final attest = WincheAppAttest(platform: device);
+    final attest = WincheAppAttest(native: device);
     await attest.proof(request());
     await attest.proof(request());
     expect(attest.refused('integrity-unknown-key'), isTrue);   // asked again at once
@@ -74,7 +74,7 @@ void main() {
 
   test('a key gone from the Secure Enclave is replaced once; other failures go to the caller', () async {
     final device = FakeDevice();
-    final attest = WincheAppAttest(platform: device);
+    final attest = WincheAppAttest(native: device);
     await attest.proof(request());
     device.lost.add('key-1');
     expect(await attest.proof(request()), {'keyId': 'key-2', 'challenge': 'ch-2', 'attestation': 'attestation-of-key-2'});
@@ -84,8 +84,8 @@ void main() {
   });
 
   test('isSupported: the device says; where there is no plugin (not iOS or macOS), false', () async {
-    expect(await WincheAppAttest.isSupported(platform: FakeDevice()..supported = false), isFalse);
-    expect(await WincheAppAttest.isSupported(platform: FakeDevice()), isTrue);
+    expect(await WincheAppAttest.isSupported(native: FakeDevice()..supported = false), isFalse);
+    expect(await WincheAppAttest.isSupported(native: FakeDevice()), isTrue);
     expect(await WincheAppAttest.isSupported(), isFalse);   // no native side in a test
   });
 
