@@ -5,8 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-import winche_app_attest
+import winche_integrity
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  WincheAppAttestPlugin.register(with: registry.registrar(forPlugin: "WincheAppAttestPlugin"))
+  WincheIntegrityPlugin.register(with: registry.registrar(forPlugin: "WincheIntegrityPlugin"))
 }

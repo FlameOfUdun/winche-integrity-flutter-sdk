@@ -2,12 +2,12 @@ import 'package:flutter/services.dart';
 
 /// The native side (Swift, iOS and macOS): Apple's `DCAppAttestService`, and a
 /// place to keep the key's id. Tests replace it.
-class WincheAppAttestPlatform {
+class WincheIntegrityNative {
   /// The channel the plugin answers on.
-  static const channel = MethodChannel('winche_app_attest');
+  static const channel = MethodChannel('winche_integrity');
 
   /// The platform, over [channel].
-  const WincheAppAttestPlatform();
+  const WincheIntegrityNative();
 
   /// Whether this device has App Attest (a real iPhone, iPad or Mac; not a simulator).
   Future<bool> isSupported() async => await channel.invokeMethod<bool>('isSupported') ?? false;

@@ -1,6 +1,6 @@
-# winche_app_attest_example
+# winche_integrity_example
 
-Demonstrates how to use the winche_app_attest plugin.
+Demonstrates how to use the winche_integrity plugin.
 
 ## Getting Started
 

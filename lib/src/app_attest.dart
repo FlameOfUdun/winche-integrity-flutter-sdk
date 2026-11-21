@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:winche_core/winche_core.dart';
 
-import 'platform.dart';
+import 'native.dart';
 
 /// Proof by Apple's App Attest (iOS 14+, macOS 11+, on a real device): the app
 /// makes a key in the Secure Enclave, has Apple attest it once, then signs each
@@ -19,14 +19,14 @@ import 'platform.dart';
 /// knows (the app's Apple ids changed, its keys were forgotten) is replaced by
 /// a new one at once.
 final class WincheAppAttest extends WincheIntegrityProvider {
-  final WincheAppAttestPlatform _platform;
+  final WincheIntegrityNative _platform;
   final Set<String> _startOver = {};
 
   /// App Attest, through [platform] (tests give their own).
-  WincheAppAttest({WincheAppAttestPlatform platform = const WincheAppAttestPlatform()}) : _platform = platform;
+  WincheAppAttest({WincheIntegrityNative platform = const WincheIntegrityNative()}) : _platform = platform;
 
   /// Whether this device can prove itself with App Attest (simulators can't).
-  static Future<bool> isSupported({WincheAppAttestPlatform platform = const WincheAppAttestPlatform()}) async {
+  static Future<bool> isSupported({WincheIntegrityNative platform = const WincheIntegrityNative()}) async {
     try {
       return await platform.isSupported();
     } on MissingPluginException {

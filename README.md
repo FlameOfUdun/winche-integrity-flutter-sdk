@@ -1,4 +1,4 @@
-# winche_app_attest
+# winche_integrity
 
 Apple's **App Attest** for [Winche](https://github.com/FlameOfUdun/winche-server) Integrity: proof, on iOS and macOS,
 that requests to a Winche project come from its own app, not a copy of it, a script or someone's curl.
@@ -18,11 +18,11 @@ short-lived Integrity tokens, which every Winche SDK sends with its requests.
 3. **In the app**:
 
 ```sh
-flutter pub add winche_app_attest
+flutter pub add winche_integrity
 ```
 
 ```dart
-import 'package:winche_app_attest/winche_app_attest.dart';
+import 'package:winche_integrity/winche_integrity.dart';
 
 final app = Winche.initializeApp(options: DefaultWincheOptions.currentPlatform);   // appId from winche configure --app
 app.useIntegrity(kDebugMode && !await WincheAppAttest.isSupported()
@@ -52,7 +52,7 @@ flutter test
 cd example && flutter build macos --debug   # compiles the Swift (iOS: flutter build ios --simulator)
 ```
 
-Building the example from this repository needs its folder named `winche_app_attest` (Swift Package Manager names a
+Building the example from this repository needs its folder named `winche_integrity` (Swift Package Manager names a
 package by its folder); apps that install it from pub.dev aren't affected.
 
 ## License

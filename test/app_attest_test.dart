@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:winche_app_attest/winche_app_attest.dart';
+import 'package:winche_integrity/winche_integrity.dart';
 import 'package:winche_core/winche_core.dart';
 
 /// A device: keys it makes, what it keeps, and keys that can vanish from the Secure Enclave.
-class FakeDevice extends WincheAppAttestPlatform {
+class FakeDevice extends WincheIntegrityNative {
   final Map<String, String> kept = {};
   final Set<String> lost = {};
   final List<String> calls = [];
@@ -91,11 +91,11 @@ void main() {
 
   test('the channel carries the calls to the native side', () async {
     final seen = <MethodCall>[];
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(WincheAppAttestPlatform.channel, (call) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(WincheIntegrityNative.channel, (call) async {
       seen.add(call);
       return switch (call.method) { 'isSupported' => true, 'generateKey' => 'k', 'attestKey' => 'a', 'generateAssertion' => 's', _ => null };
     });
-    const p = WincheAppAttestPlatform();
+    const p = WincheIntegrityNative();
     expect(await p.isSupported(), isTrue);
     expect(await p.generateKey(), 'k');
     expect(await p.attestKey('k', 'ch'), 'a');
@@ -103,6 +103,6 @@ void main() {
     await p.save('n', 'v');
     expect(seen.map((c) => '${c.method} ${c.arguments}'), ['isSupported null', 'generateKey null', 'attestKey {keyId: k, challenge: ch}',
       'generateAssertion {keyId: k, challenge: ch}', 'save {name: n, value: v}']);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(WincheAppAttestPlatform.channel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(WincheIntegrityNative.channel, null);
   });
 }

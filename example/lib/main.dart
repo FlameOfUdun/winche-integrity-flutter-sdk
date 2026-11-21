@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:winche_app_attest/winche_app_attest.dart';
+import 'package:winche_integrity/winche_integrity.dart';
 import 'package:winche_core/winche_core.dart';
 
 /// Proves this app to a Winche project with App Attest and calls one of its APIs.
@@ -45,7 +45,7 @@ class _ExampleAppState extends State<ExampleApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
         home: Scaffold(
-          appBar: AppBar(title: const Text('Winche App Attest')),
+          appBar: AppBar(title: const Text('Winche Integrity')),
           body: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

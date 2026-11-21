@@ -4,25 +4,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "winche_app_attest",
+    name: "winche_integrity",
     platforms: [
-        .macOS("12.0")
+        .iOS("15.0")
     ],
     products: [
-        .library(name: "winche-app-attest", targets: ["winche_app_attest"])
+        .library(name: "winche-integrity", targets: ["winche_integrity"])
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework")
     ],
     targets: [
         .target(
-            name: "winche_app_attest",
+            name: "winche_integrity",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ],
             resources: [
-                // If your plugin requires a privacy manifest, for example if it collects user
-                // data, update the PrivacyInfo.xcprivacy file to describe your plugin's
+                // If your plugin requires a privacy manifest, for example if it uses any required
+                // reason APIs, update the PrivacyInfo.xcprivacy file to describe your plugin's
                 // privacy impact, and then uncomment these lines. For more information, see
                 // https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
                 .process("PrivacyInfo.xcprivacy"),

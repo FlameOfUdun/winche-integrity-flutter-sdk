@@ -10,15 +10,15 @@ import FlutterMacOS
 /// Apple's App Attest for Winche Integrity: a key in the Secure Enclave, its attestation (once) and assertions with it,
 /// each for SHA-256 of a challenge from the project. The key's id is kept in UserDefaults (it isn't a secret: the key
 /// never leaves the device).
-public class WincheAppAttestPlugin: NSObject, FlutterPlugin {
+public class WincheIntegrityPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     #if os(iOS)
     let messenger = registrar.messenger()
     #else
     let messenger = registrar.messenger
     #endif
-    let channel = FlutterMethodChannel(name: "winche_app_attest", binaryMessenger: messenger)
-    registrar.addMethodCallDelegate(WincheAppAttestPlugin(), channel: channel)
+    let channel = FlutterMethodChannel(name: "winche_integrity", binaryMessenger: messenger)
+    registrar.addMethodCallDelegate(WincheIntegrityPlugin(), channel: channel)
   }
 
   private let defaults = UserDefaults.standard

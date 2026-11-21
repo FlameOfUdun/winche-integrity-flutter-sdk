@@ -1,8 +1,8 @@
-name: winche_app_attest
+name: winche_integrity
 description: Apple's App Attest for Winche Integrity — proof, on iOS and macOS, that requests to a Winche project come from its own app.
 version: 0.1.0
-repository: https://github.com/FlameOfUdun/winche-app-attest-flutter
-issue_tracker: https://github.com/FlameOfUdun/winche-app-attest-flutter/issues
+repository: https://github.com/FlameOfUdun/winche-integrity-flutter-sdk
+issue_tracker: https://github.com/FlameOfUdun/winche-integrity-flutter-sdk/issues
 
 topics:
   - backend
@@ -27,6 +27,6 @@ flutter:
   plugin:
     platforms:
       ios:
-        pluginClass: WincheAppAttestPlugin
+        pluginClass: WincheIntegrityPlugin
       macos:
-        pluginClass: WincheAppAttestPlugin
+        pluginClass: WincheIntegrityPlugin

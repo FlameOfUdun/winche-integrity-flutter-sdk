@@ -2,5 +2,5 @@
 /// requests come from the project's own app. See [WincheAppAttest].
 library;
 
-export 'src/platform.dart' show WincheAppAttestPlatform;
-export 'src/winche_app_attest.dart' show WincheAppAttest;
+export 'src/native.dart' show WincheIntegrityNative;
+export 'src/app_attest.dart' show WincheAppAttest;
