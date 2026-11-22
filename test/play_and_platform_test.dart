@@ -45,12 +45,17 @@ void main() {
     expect(native.playCalls.single, (123456789012, WinchePlayIntegrity.requestHash('ch-1')));
     // As the server makes it: SHA-256 of the challenge's UTF-8, lower-case hex.
     expect(WinchePlayIntegrity.requestHash('abc'), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
-    await expectLater(play.proof(request(project: null)), throwsA(isA<StateError>().having((e) => e.message, 'message', contains('Google Cloud project number'))));
+    await expectLater(play.proof(request(project: null)),
+        throwsA(isA<WincheIntegrityUnsupported>().having((e) => e.message, 'message', contains('Google Cloud project number'))));
   });
 
-  test('Google failures come to the caller as they are', () async {
-    final play = WinchePlayIntegrity(native: _Failing());
+  test('Google failures come to the caller as they are; a device without Play services is unsupported', () async {
+    final play = WinchePlayIntegrity(native: _Failing(-3));   // NETWORK_ERROR
     await expectLater(play.proof(request()), throwsA(isA<PlatformException>().having((e) => e.code, 'code', 'playIntegrity')));
+    for (final code in [-1, -2, -6, -9, -14, -15]) {
+      await expectLater(WinchePlayIntegrity(native: _Failing(code)).proof(request()),
+          throwsA(isA<WincheIntegrityUnsupported>().having((e) => e.cause, 'cause', isA<PlatformException>())));
+    }
   });
 
   test('the platform picks: App Attest on iOS and macOS, Play Integrity on Android, else the debug token', () async {
@@ -59,7 +64,7 @@ void main() {
           turnstile: WincheTurnstile(run: ({required siteKey, required action, required cData}) async => 'cf-token'));
       try {
         await picker.proof(request());
-      } on StateError {
+      } on WincheIntegrityUnsupported {
         return 'none';
       }
       return picker.provider;
@@ -84,9 +89,10 @@ void main() {
     expect(turnstile.provider, 'turnstile');
     expect(await turnstile.proof(request()), {'challenge': 'ch-1', 'token': 'cf-token'});
     expect(runs, ['0x4AAAAAAAsitekey123 winche-integrity ch-1']);
-    await expectLater(turnstile.proof(request(siteKey: null)), throwsA(isA<StateError>().having((e) => e.message, 'message', contains('Turnstile site key'))));
+    await expectLater(turnstile.proof(request(siteKey: null)),
+        throwsA(isA<WincheIntegrityUnsupported>().having((e) => e.message, 'message', contains('Turnstile site key'))));
     // Off the web, the real runner says it can't run.
-    await expectLater(WincheTurnstile().proof(request()), throwsA(isA<UnsupportedError>()));
+    await expectLater(WincheTurnstile().proof(request()), throwsA(isA<WincheIntegrityUnsupported>()));
   });
 
   test('without what Play Integrity or the browser check needs (the emulator), the debug token', () async {
@@ -97,7 +103,27 @@ void main() {
       expect(picker.provider, 'debug');
     }
     final noDebug = WinchePlatformIntegrity(native: FakeNative(), platform: TargetPlatform.android);
-    await expectLater(noDebug.proof(request(project: null)), throwsA(isA<StateError>()));
+    await expectLater(noDebug.proof(request(project: null)), throwsA(isA<WincheIntegrityUnsupported>()));
+  });
+
+  test("an emulator without Play services, or a simulator App Attest refuses: the debug token, from then on", () async {
+    final android = WinchePlatformIntegrity(native: _Failing(-6), platform: TargetPlatform.android, debugToken: 'wdt_local');
+    expect(await android.proof(request()), {'debugToken': 'wdt_local'});
+    expect(android.provider, 'debug');
+    final apple = WinchePlatformIntegrity(native: _NoAttest(), platform: TargetPlatform.iOS, debugToken: 'wdt_local');
+    expect(await apple.proof(request()), {'debugToken': 'wdt_local'});
+    expect(apple.provider, 'debug');
+  });
+
+  test("a failure that may pass (the network, a timeout) isn't a reason to switch to the debug token", () async {
+    final android = WinchePlatformIntegrity(native: _Failing(-3), platform: TargetPlatform.android, debugToken: 'wdt_local');
+    await expectLater(android.proof(request()), throwsA(isA<PlatformException>()));
+    expect(android.provider, 'playIntegrity');
+    final browser = WinchePlatformIntegrity(native: FakeNative(), web: true, debugToken: 'wdt_local',
+        turnstile: WincheTurnstile(run: ({required siteKey, required action, required cData}) async =>
+            throw StateError('Turnstile timed out waiting for the person.')));
+    await expectLater(browser.proof(request()), throwsA(isA<StateError>()));
+    expect(browser.provider, 'turnstile');
   });
 
   test("the platform's choice hears refusals", () async {
@@ -112,7 +138,16 @@ void main() {
 }
 
 class _Failing extends FakeNative {
+  final int code;
+  _Failing(this.code);
+
   @override
   Future<String> playIntegrityToken(int cloudProjectNumber, String requestHash) async =>
-      throw PlatformException(code: 'playIntegrity', message: 'No Play Store', details: {'code': -2, 'retryable': false});
+      throw PlatformException(code: 'playIntegrity', message: 'Play Integrity failed', details: {'code': code, 'retryable': code == -3});
+}
+
+/// Says it has App Attest, then Apple answers featureUnsupported.
+class _NoAttest extends FakeNative {
+  @override
+  Future<String> attestKey(String keyId, String challenge) async => throw PlatformException(code: 'unsupported');
 }

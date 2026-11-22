@@ -7,7 +7,7 @@ Integrity token, and every Winche SDK sends it with its requests (winche_core do
 | Platform | Proof |
 | --- | --- |
 | iOS 15+, macOS 12+ (real devices) | Apple **App Attest** (`WincheAppAttest`) |
-| Android 6+ with the Play Store | Google **Play Integrity**, standard API (`WinchePlayIntegrity`) |
+| Android 7+ with the Play Store | Google **Play Integrity**, standard API (`WinchePlayIntegrity`) |
 | Web | a browser check: Cloudflare **Turnstile** (`WincheTurnstile`) |
 | Simulators, Windows, Linux | a **debug token** from the console |
 
@@ -28,7 +28,9 @@ app.useIntegrity(WinchePlatformIntegrity(
 ```
 
 Against the emulator (`winche emulators start`), which takes any proof, Android and web apps fall back to the debug
-token (the emulator has no Cloud project number or site key to give them).
+token (the emulator has no Cloud project number or site key to give them). The fallback is only for a platform that
+can't give the proof at all (`WincheIntegrityUnsupported`: no Play services, App Attest missing); a failure that may
+pass, such as the network or a Turnstile timeout, is reported and tried again later.
 
 Or choose the proof yourself: `WincheAppAttest()`, `WinchePlayIntegrity()`, `WincheTurnstile()`.
 

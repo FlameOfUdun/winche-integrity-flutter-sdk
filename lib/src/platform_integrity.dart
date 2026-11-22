@@ -5,6 +5,7 @@ import 'app_attest.dart';
 import 'native.dart';
 import 'play_integrity.dart';
 import 'turnstile.dart';
+import 'unsupported.dart';
 
 /// The proof this platform has: App Attest on iOS and macOS, Play Integrity on
 /// Android, the browser check (Turnstile) on the web; elsewhere (simulators,
@@ -59,12 +60,14 @@ final class WinchePlatformIntegrity extends WincheIntegrityProvider {
 
   @override
   Future<Map<String, Object?>> proof(WincheIntegrityRequest request) async {
-    final p = await _choose() ?? (throw StateError('No proof of integrity on this platform: give WinchePlatformIntegrity a debug token here.'));
+    final p = await _choose() ??
+        (throw const WincheIntegrityUnsupported('No proof of integrity on this platform: give WinchePlatformIntegrity a debug token here.'));
     try {
       return await p.proof(request);
-    } on StateError {
-      // Play Integrity or the browser check without what they need from the project (its Cloud project number, its
-      // site key: the emulator has neither): the debug token, when there is one.
+    } on WincheIntegrityUnsupported {
+      // A platform that can't give the proof at all (no Play services on the emulator, App Attest missing, no Cloud
+      // project number or site key for the app): the debug token, when there is one, from now on. A failure that may
+      // pass (a timeout, the network) is the caller's, and the proof is tried again later.
       if (debugToken == null || p is WincheDebugIntegrity) rethrow;
       _chosen = WincheDebugIntegrity(debugToken!);
       return _chosen!.proof(request);

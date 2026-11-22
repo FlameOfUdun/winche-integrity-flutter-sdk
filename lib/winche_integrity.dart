@@ -9,3 +9,4 @@ export 'src/native.dart' show WincheIntegrityNative;
 export 'src/platform_integrity.dart' show WinchePlatformIntegrity;
 export 'src/play_integrity.dart' show WinchePlayIntegrity;
 export 'src/turnstile.dart' show WincheTurnstile, TurnstileRun;
+export 'src/unsupported.dart' show WincheIntegrityUnsupported;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:winche_integrity/winche_integrity.dart';
 import 'package:winche_core/winche_core.dart';
@@ -24,7 +25,8 @@ class _ExampleAppState extends State<ExampleApp> {
       appId: const String.fromEnvironment('WINCHE_APP', defaultValue: 'example-app'),
     ));
     try {
-      final integrity = WinchePlatformIntegrity(debugToken: const String.fromEnvironment('WINCHE_DEBUG_TOKEN'));
+      // A debug token only in debug builds (simulators, emulators): never in a release.
+      final integrity = WinchePlatformIntegrity(debugToken: kDebugMode ? const String.fromEnvironment('WINCHE_DEBUG_TOKEN') : null);
       app.useIntegrity(integrity);
       final errors = <Object>[];
       app.integrity.errors.listen(errors.add);

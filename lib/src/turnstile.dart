@@ -1,5 +1,6 @@
 import 'package:winche_core/winche_core.dart';
 
+import 'unsupported.dart';
 import 'turnstile_runner_stub.dart' if (dart.library.js_interop) 'turnstile_runner_web.dart' as runner;
 
 /// Runs a Cloudflare Turnstile widget for a site key, action and cData: its token. Tests give their own.
@@ -29,7 +30,7 @@ final class WincheTurnstile extends WincheIntegrityProvider {
   Future<Map<String, Object?>> proof(WincheIntegrityRequest request) async {
     final challenge = await request.challenge();
     final siteKey = challenge.webSiteKey ??
-        (throw StateError("The project has no Turnstile site key for ${request.appId}: set it under Integrity in the console."));
+        (throw WincheIntegrityUnsupported("The project has no Turnstile site key for ${request.appId}: set it under Integrity in the console."));
     return {'challenge': challenge.value, 'token': await _run(siteKey: siteKey, action: action, cData: challenge.value)};
   }
 }

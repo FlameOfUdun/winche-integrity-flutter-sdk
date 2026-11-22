@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:winche_core/winche_core.dart';
 
 import 'native.dart';
+import 'unsupported.dart';
 
 /// Proof by Apple's App Attest (iOS 14+, macOS 11+, on a real device): the app
 /// makes a key in the Secure Enclave, has Apple attest it once, then signs each
@@ -70,6 +71,7 @@ final class WincheAppAttest extends WincheIntegrityProvider {
         _lastAttested = false;
         return {'keyId': keyId, 'challenge': challenge, 'assertion': await _platform.generateAssertion(keyId, challenge)};
       } on PlatformException catch (e) {
+        if (e.code == 'unsupported') throw WincheIntegrityUnsupported("App Attest isn't available on this device.", cause: e);
         // The key is gone from the Secure Enclave (a restored backup, a new device): a new one, once.
         if (e.code != 'invalidKey' || tries > 0) rethrow;
         await _platform.remove(keyName);

@@ -18,6 +18,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   crypto: ^3.0.6
   web: ^1.1.0
   winche_core: ^1.1.0
@@ -37,3 +39,6 @@ flutter:
         pluginClass: WincheIntegrityPlugin
       macos:
         pluginClass: WincheIntegrityPlugin
+      web:
+        pluginClass: WincheIntegrityWeb
+        fileName: src/winche_integrity_web.dart

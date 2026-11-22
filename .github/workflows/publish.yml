@@ -1,0 +1,27 @@
+name: Publish to pub.dev
+
+# Push a tag v<version> (the version in pubspec.yaml, e.g. v0.1.0) to publish this package. pub.dev checks the tag
+# matches the version, and trusts GitHub's identity token for this repository: no token is stored here.
+# It depends on winche_core through pub.dev, so release winche_core first.
+# A Flutter plugin: Dart's shared publish workflow has no Flutter, so the steps are here (setup-dart gets the token).
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # pub.dev automated publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter pub publish --force

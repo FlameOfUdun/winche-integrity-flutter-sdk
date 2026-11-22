@@ -54,7 +54,11 @@ Future<String> runTurnstile({required String siteKey, required String action, re
     ..['retry'] = 'never'.toJS
     ..['refresh-expired'] = 'never'.toJS
     ..['callback'] = ((JSString t) { if (!token.isCompleted) token.complete(t.toDart); }).toJS
-    ..['error-callback'] = ((JSAny? code) { if (!token.isCompleted) token.completeError(StateError('Turnstile failed: ${code.dartify()}')); }).toJS
+    // True: handled here, so Turnstile doesn't also throw it to the page's console.
+    ..['error-callback'] = ((JSAny? code) {
+      if (!token.isCompleted) token.completeError(StateError('Turnstile failed: ${code.dartify()}'));
+      return true.toJS;
+    }).toJS
     ..['timeout-callback'] = (() { if (!token.isCompleted) token.completeError(StateError('Turnstile timed out waiting for the person.')); }).toJS;
   JSString? widget;
   try {
