@@ -9,3 +9,5 @@ First version of Winche Integrity for Flutter (winche_core 1.1.0):
   assertion with it; a key the project no longer knows, or one gone from the Secure Enclave, is replaced.
 - `WinchePlayIntegrity`: Google Play Integrity's standard API on Android 6+ (with the Play Store). It's prepared once per
   Google Cloud project number (which the project sends with each challenge), then a token per challenge.
+- `WincheTurnstile`: the browser check on the web, Cloudflare Turnstile (an invisible widget, the challenge as its
+  cData), with the site key the project sends with each challenge.

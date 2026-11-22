@@ -34,8 +34,8 @@ class FakeNative extends WincheIntegrityNative {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  WincheIntegrityRequest request({int? project = 123456789012}) =>
-      WincheIntegrityRequest('clinic-app', () async => WincheIntegrityChallenge('ch-1', DateTime(2030), androidCloudProjectNumber: project));
+  WincheIntegrityRequest request({int? project = 123456789012, String? siteKey = '0x4AAAAAAAsitekey123'}) =>
+      WincheIntegrityRequest('clinic-app', () async => WincheIntegrityChallenge('ch-1', DateTime(2030), androidCloudProjectNumber: project, webSiteKey: siteKey));
 
   test('Play Integrity: a token for SHA-256 of the challenge, from the Cloud project the project names', () async {
     final native = FakeNative();
@@ -55,7 +55,8 @@ void main() {
 
   test('the platform picks: App Attest on iOS and macOS, Play Integrity on Android, else the debug token', () async {
     Future<String> chosen(TargetPlatform p, {bool appAttest = true, String? debug, bool web = false}) async {
-      final picker = WinchePlatformIntegrity(native: FakeNative()..appAttest = appAttest, platform: p, web: web, debugToken: debug);
+      final picker = WinchePlatformIntegrity(native: FakeNative()..appAttest = appAttest, platform: p, web: web, debugToken: debug,
+          turnstile: WincheTurnstile(run: ({required siteKey, required action, required cData}) async => 'cf-token'));
       try {
         await picker.proof(request());
       } on StateError {
@@ -70,8 +71,22 @@ void main() {
     expect(await chosen(TargetPlatform.iOS, appAttest: false, debug: 'wdt_x'), 'debug');   // a simulator
     expect(await chosen(TargetPlatform.windows, debug: 'wdt_x'), 'debug');
     expect(await chosen(TargetPlatform.linux), 'none');
-    expect(await chosen(TargetPlatform.android, web: true, debug: 'wdt_x'), 'debug');   // the web, for now
+    expect(await chosen(TargetPlatform.android, web: true, debug: 'wdt_x'), 'turnstile');   // the browser check
     expect(await chosen(TargetPlatform.windows, debug: ''), 'none');   // an empty --dart-define is none
+  });
+
+  test('the browser check: the site key from the challenge, our action, the challenge as cData', () async {
+    final runs = <String>[];
+    final turnstile = WincheTurnstile(run: ({required siteKey, required action, required cData}) async {
+      runs.add('$siteKey $action $cData');
+      return 'cf-token';
+    });
+    expect(turnstile.provider, 'turnstile');
+    expect(await turnstile.proof(request()), {'challenge': 'ch-1', 'token': 'cf-token'});
+    expect(runs, ['0x4AAAAAAAsitekey123 winche-integrity ch-1']);
+    await expectLater(turnstile.proof(request(siteKey: null)), throwsA(isA<StateError>().having((e) => e.message, 'message', contains('Turnstile site key'))));
+    // Off the web, the real runner says it can't run.
+    await expectLater(WincheTurnstile().proof(request()), throwsA(isA<UnsupportedError>()));
   });
 
   test("the platform's choice hears refusals", () async {

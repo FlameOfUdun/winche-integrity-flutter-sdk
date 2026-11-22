@@ -1,5 +1,5 @@
 name: winche_integrity
-description: Winche Integrity for Flutter — proof that requests to a Winche project come from its own app (App Attest on iOS and macOS, Play Integrity on Android).
+description: Winche Integrity for Flutter — proof that requests to a Winche project come from its own app (App Attest on iOS and macOS, Play Integrity on Android, a browser check on the web).
 version: 0.1.0
 repository: https://github.com/FlameOfUdun/winche-integrity-flutter-sdk
 issue_tracker: https://github.com/FlameOfUdun/winche-integrity-flutter-sdk/issues
@@ -9,6 +9,7 @@ topics:
   - security
   - app-attest
   - play-integrity
+  - turnstile
 
 environment:
   sdk: ^3.10.0
@@ -18,6 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
   crypto: ^3.0.6
+  web: ^1.1.0
   winche_core: ^1.1.0
 
 dev_dependencies:

@@ -8,7 +8,8 @@ Integrity token, and every Winche SDK sends it with its requests (winche_core do
 | --- | --- |
 | iOS 15+, macOS 12+ (real devices) | Apple **App Attest** (`WincheAppAttest`) |
 | Android 6+ with the Play Store | Google **Play Integrity**, standard API (`WinchePlayIntegrity`) |
-| Simulators, Windows, Linux, web (for now) | a **debug token** from the console |
+| Web | a browser check: Cloudflare **Turnstile** (`WincheTurnstile`) |
+| Simulators, Windows, Linux | a **debug token** from the console |
 
 ## Use
 
@@ -26,7 +27,7 @@ app.useIntegrity(WinchePlatformIntegrity(
 ));
 ```
 
-Or choose the proof yourself: `app.useIntegrity(WincheAppAttest())`, `app.useIntegrity(WinchePlayIntegrity())`.
+Or choose the proof yourself: `WincheAppAttest()`, `WinchePlayIntegrity()`, `WincheTurnstile()`.
 
 ## Set up: Apple (App Attest)
 
@@ -56,11 +57,25 @@ the hash, the time, the app's and the device's verdicts. A token provider Google
 again, once; Google's other errors come to `app.integrity.errors` (`PlatformException` code `playIntegrity`, with its
 `code` and whether it's `retryable`).
 
+## Set up: web (the browser check)
+
+1. **In Cloudflare** (dashboard → Turnstile → Add widget): mode **Invisible** (or Managed), and the hostnames the app runs
+   on. Keep its site key and secret key.
+2. **In the project** (console → **Integrity**): give the app the **Turnstile site key**, its **secret key** (kept as a
+   secret), and the **sites the app runs on** (a check made elsewhere is refused).
+
+Nothing goes in the app: the project sends the site key with each challenge. `WincheTurnstile` loads Cloudflare's
+script (from Cloudflare: it mustn't be proxied), renders an invisible widget with the challenge as its cData, and sends
+the token; a person sees it only if Cloudflare wants a click. Cloudflare's always-passing test keys are refused by the
+project. A browser check tells a person's browser from a script, not which app is calling: weaker than App Attest or Play
+Integrity. A page with a Content Security Policy must allow `https://challenges.cloudflare.com` for scripts and frames.
+
 ## Develop
 
 ```sh
 flutter test
 cd example && flutter build apk --debug           # compiles the Kotlin
+cd example && flutter build web                   # compiles the JS interop (and --wasm)
 cd example && flutter build macos --debug         # compiles the Swift (iOS: flutter build ios --simulator)
 ```
 
