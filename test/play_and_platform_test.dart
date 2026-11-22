@@ -89,6 +89,17 @@ void main() {
     await expectLater(WincheTurnstile().proof(request()), throwsA(isA<UnsupportedError>()));
   });
 
+  test('without what Play Integrity or the browser check needs (the emulator), the debug token', () async {
+    for (final (platform, web) in [(TargetPlatform.android, false), (TargetPlatform.windows, true)]) {
+      final picker = WinchePlatformIntegrity(native: FakeNative(), platform: platform, web: web, debugToken: 'wdt_local',
+          turnstile: WincheTurnstile(run: ({required siteKey, required action, required cData}) async => 'cf'));
+      expect(await picker.proof(request(project: null, siteKey: null)), {'debugToken': 'wdt_local'});
+      expect(picker.provider, 'debug');
+    }
+    final noDebug = WinchePlatformIntegrity(native: FakeNative(), platform: TargetPlatform.android);
+    await expectLater(noDebug.proof(request(project: null)), throwsA(isA<StateError>()));
+  });
+
   test("the platform's choice hears refusals", () async {
     final native = FakeNative();
     final picker = WinchePlatformIntegrity(native: native, platform: TargetPlatform.iOS);

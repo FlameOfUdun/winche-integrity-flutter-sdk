@@ -27,6 +27,9 @@ app.useIntegrity(WinchePlatformIntegrity(
 ));
 ```
 
+Against the emulator (`winche emulators start`), which takes any proof, Android and web apps fall back to the debug
+token (the emulator has no Cloud project number or site key to give them).
+
 Or choose the proof yourself: `WincheAppAttest()`, `WinchePlayIntegrity()`, `WincheTurnstile()`.
 
 ## Set up: Apple (App Attest)

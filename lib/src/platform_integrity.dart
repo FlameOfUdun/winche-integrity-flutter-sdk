@@ -60,7 +60,15 @@ final class WinchePlatformIntegrity extends WincheIntegrityProvider {
   @override
   Future<Map<String, Object?>> proof(WincheIntegrityRequest request) async {
     final p = await _choose() ?? (throw StateError('No proof of integrity on this platform: give WinchePlatformIntegrity a debug token here.'));
-    return p.proof(request);
+    try {
+      return await p.proof(request);
+    } on StateError {
+      // Play Integrity or the browser check without what they need from the project (its Cloud project number, its
+      // site key: the emulator has neither): the debug token, when there is one.
+      if (debugToken == null || p is WincheDebugIntegrity) rethrow;
+      _chosen = WincheDebugIntegrity(debugToken!);
+      return _chosen!.proof(request);
+    }
   }
 
   @override
