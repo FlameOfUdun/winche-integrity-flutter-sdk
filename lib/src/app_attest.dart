@@ -4,7 +4,7 @@ import 'package:winche_core/winche_core.dart';
 import 'native.dart';
 import 'unsupported.dart';
 
-/// Proof by Apple's App Attest (iOS 14+, macOS 11+, on a real device): the app
+/// Proof by Apple's App Attest (iOS 15+, macOS 12+, on a real device): the app
 /// makes a key in the Secure Enclave, has Apple attest it once, then signs each
 /// challenge from the project with it. The project needs the app's Apple team
 /// id and bundle id (Integrity in the console).

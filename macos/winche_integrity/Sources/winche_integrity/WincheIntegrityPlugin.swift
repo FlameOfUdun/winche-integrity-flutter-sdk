@@ -43,14 +43,16 @@ public class WincheIntegrityPlugin: NSObject, FlutterPlugin {
         Self.answer(result, keyId, error)
       }
     case "attestKey":
-      guard let service = Self.supported(result), let keyId = args["keyId"] as? String, let challenge = args["challenge"] as? String else {
+      guard let service = Self.supported(result) else { return }  // already answered: unsupported
+      guard let keyId = args["keyId"] as? String, let challenge = args["challenge"] as? String else {
         return Self.badArguments(result)
       }
       service.attestKey(keyId, clientDataHash: Self.hash(challenge)) { attestation, error in
         Self.answer(result, attestation?.base64EncodedString(), error)
       }
     case "generateAssertion":
-      guard let service = Self.supported(result), let keyId = args["keyId"] as? String, let challenge = args["challenge"] as? String else {
+      guard let service = Self.supported(result) else { return }  // already answered: unsupported
+      guard let keyId = args["keyId"] as? String, let challenge = args["challenge"] as? String else {
         return Self.badArguments(result)
       }
       service.generateAssertion(keyId, clientDataHash: Self.hash(challenge)) { assertion, error in
