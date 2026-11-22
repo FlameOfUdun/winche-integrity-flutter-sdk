@@ -52,10 +52,13 @@ void main() {
   test('Google failures come to the caller as they are; a device without Play services is unsupported', () async {
     final play = WinchePlayIntegrity(native: _Failing(-3));   // NETWORK_ERROR
     await expectLater(play.proof(request()), throwsA(isA<PlatformException>().having((e) => e.code, 'code', 'playIntegrity')));
-    for (final code in [-1, -2, -6, -9, -14, -15]) {
+    for (final code in [-1, -2, -6, -14, -15]) {
       await expectLater(WinchePlayIntegrity(native: _Failing(code)).proof(request()),
           throwsA(isA<WincheIntegrityUnsupported>().having((e) => e.cause, 'cause', isA<PlatformException>())));
     }
+    // CANNOT_BIND_TO_SERVICE: Google says to try again later, so not unsupported.
+    await expectLater(WinchePlayIntegrity(native: _Failing(-9)).proof(request()),
+        throwsA(isA<PlatformException>().having((e) => e.code, 'code', 'playIntegrity')));
   });
 
   test('the platform picks: App Attest on iOS and macOS, Play Integrity on Android, else the debug token', () async {
@@ -143,7 +146,7 @@ class _Failing extends FakeNative {
 
   @override
   Future<String> playIntegrityToken(int cloudProjectNumber, String requestHash) async =>
-      throw PlatformException(code: 'playIntegrity', message: 'Play Integrity failed', details: {'code': code, 'retryable': code == -3});
+      throw PlatformException(code: 'playIntegrity', message: 'Play Integrity failed', details: {'code': code, 'retryable': code == -3 || code == -9});
 }
 
 /// Says it has App Attest, then Apple answers featureUnsupported.

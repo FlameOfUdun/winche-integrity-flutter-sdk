@@ -13,6 +13,6 @@ First version of Winche Integrity for Flutter (winche_core 1.1.0):
   cData), with the site key the project sends with each challenge.
 - `WincheIntegrityUnsupported`: thrown where the proof can't be given at all (App Attest missing, Play Integrity
   without the Play Store or Play services, no Cloud project number or site key for the app). `WinchePlatformIntegrity`
-  falls back to its debug token only then; a failure that may pass (the network, a Turnstile timeout) is reported and
-  tried again later.
+  falls back to its debug token only then; a failure that may pass (the network, a Turnstile timeout, Play's
+  CANNOT_BIND_TO_SERVICE) is reported and tried again later.
 - The web is a listed platform (the plugin is Dart there).

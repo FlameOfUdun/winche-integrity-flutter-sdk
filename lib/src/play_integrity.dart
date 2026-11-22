@@ -28,13 +28,13 @@ final class WinchePlayIntegrity extends WincheIntegrityProvider {
   static String requestHash(String challenge) => sha256.convert(utf8.encode(challenge)).toString();
 
   /// Google's error codes for a device that can't run Play Integrity at all
-  /// (no Play Store or Play services, too old, not reachable): an emulator,
-  /// mostly. Others (network, too many requests, Google's servers) may work later.
+  /// (no Play Store or Play services, or too old): an emulator, mostly. Others
+  /// (network, too many requests, Google's servers, and -9
+  /// CANNOT_BIND_TO_SERVICE, which Google says to retry with backoff) may work later.
   static const unsupportedCodes = {
     -1, // API_NOT_AVAILABLE
     -2, // PLAY_STORE_NOT_FOUND
     -6, // PLAY_SERVICES_NOT_FOUND
-    -9, // CANNOT_BIND_TO_SERVICE
     -14, // PLAY_STORE_VERSION_OUTDATED
     -15, // PLAY_SERVICES_VERSION_OUTDATED
   };

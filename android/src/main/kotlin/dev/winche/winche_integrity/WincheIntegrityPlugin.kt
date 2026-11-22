@@ -82,7 +82,7 @@ class WincheIntegrityPlugin : FlutterPlugin, MethodCallHandler {
         val retryable = code in setOf(
             StandardIntegrityErrorCode.NETWORK_ERROR, StandardIntegrityErrorCode.TOO_MANY_REQUESTS,
             StandardIntegrityErrorCode.GOOGLE_SERVER_UNAVAILABLE, StandardIntegrityErrorCode.CLIENT_TRANSIENT_ERROR,
-            StandardIntegrityErrorCode.INTERNAL_ERROR,
+            StandardIntegrityErrorCode.INTERNAL_ERROR, StandardIntegrityErrorCode.CANNOT_BIND_TO_SERVICE,
         )
         result.error("playIntegrity", e.message ?: "Play Integrity failed.", mapOf("code" to code, "retryable" to retryable))
     }
