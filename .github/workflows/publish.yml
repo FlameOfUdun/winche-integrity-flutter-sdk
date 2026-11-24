@@ -22,7 +22,7 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
-      - run: flutter analyze
+      - run: flutter analyze --no-fatal-infos   # a newer Flutter's deprecation notes never block a release
       - run: flutter test
       - uses: dart-lang/setup-dart@v1
       - run: flutter pub publish --force
